@@ -29,8 +29,8 @@ def get_batch(ds, index, repeat):
     nt = ds.num_target
     # print(index)
     batch_size = index.shape[0]
-    bbx = xp.empty((batch_size, 3, 256, 256))
-    bbt = xp.zeros((batch_size, nt))
+    bbx = np.empty((batch_size, 3, 256, 256))
+    bbt = np.zeros((batch_size, nt))
     for bi in range(batch_size):
         bbx[bi] = ds[bi][0]
         bbt[bi][ds[bi][1]] = 1
