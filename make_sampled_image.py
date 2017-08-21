@@ -29,7 +29,7 @@ def generate_xm_rgb(lm, sm, img, num_lm, g_size, img_size=256):
     return xm.reshape(num_lm, 3, g_size, g_size).astype(np.float32)
 
 
-def generate_xm_cons(lm, sm, img, num_lm, g_size, img_size=112):
+def generate_xm_cons(lm, sm, img, num_lm, g_size, img_size=256):
     xm = np.empty((num_lm, g_size * g_size)).astype(np.float32)
     img_buf = img.reshape((num_lm, img_size * img_size))
     zm = sm
@@ -46,12 +46,12 @@ def generate_xm_cons(lm, sm, img, num_lm, g_size, img_size=112):
 
 
 # 切り取り画像の作成
-def generate_xm_rgb_gpu(lm, sm, x, num_lm, g_size, img_size=112):
+def generate_xm_rgb_gpu(lm, sm, x, num_lm, g_size, img_size=256):
     xm = generate_xm_rgb(cuda.to_cpu(lm), cuda.to_cpu(sm), cuda.to_cpu(x), num_lm, g_size=g_size, img_size=img_size)
     return cuda.to_gpu(xm, device=0)
 
 
-def generate_xm_in_gpu(lm, sm, img, num_lm, g_size, img_size=112):
+def generate_xm_in_gpu(lm, sm, img, num_lm, g_size, img_size=256):
     xm = xp.empty((num_lm, g_size * g_size)).astype(xp.float32)
     img_buf = img.reshape((num_lm, img_size * img_size))
     zm = xp.power(10, sm - 1)
@@ -67,19 +67,19 @@ def generate_xm_in_gpu(lm, sm, img, num_lm, g_size, img_size=112):
     return xm.reshape(num_lm, 1, g_size, g_size).astype(xp.float32)
 
 
-def generate_xm_const_gpu(lm, sm, x, num_lm, g_size, img_size=112):
+def generate_xm_const_gpu(lm, sm, x, num_lm, g_size, img_size=256):
     xm = generate_xm_cons(cuda.to_cpu(lm), cuda.to_cpu(sm), cuda.to_cpu(x), num_lm, g_size=g_size, img_size=img_size)
     return cuda.to_gpu(xm, device=0)
 
 
-def generate_xm_const_size_gpu(lm, sm, x, num_lm, g_size, img_size=112):
+def generate_xm_const_size_gpu(lm, sm, x, num_lm, g_size, img_size=256):
     s = g_size / img_size + np.zeros((num_lm, 1))
     s = np.log10(s) + 1
     xm = generate_xm_cons(cuda.to_cpu(lm), s, cuda.to_cpu(x), num_lm, g_size=g_size, img_size=img_size)
     return cuda.to_gpu(xm, device=0)
 
 
-def generate_xm_const_size(lm, sm, x, num_lm, g_size=20, img_size=112):
+def generate_xm_const_size(lm, sm, x, num_lm, g_size=20, img_size=256):
     s = g_size / img_size + np.zeros((num_lm, 1))
     # make g_size image
     s = np.log10(s) + 1
