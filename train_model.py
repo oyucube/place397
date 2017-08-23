@@ -32,8 +32,8 @@ def get_batch(ds, index, repeat):
     bbx = np.empty((batch_size, 3, 256, 256))
     bbt = np.zeros((batch_size, nt))
     for bi in range(batch_size):
-        bbx[bi] = ds[bi][0]
-        bbt[bi][ds[bi][1]] = 1
+        bbx[bi] = ds[index[bi]][0]
+        bbt[bi][ds[index[bi]][1]] = 1
     bbx = bbx.reshape(batch_size, 3, 256, 256).astype(np.float32)
     bbt = bbt.astype(np.float32)
     bbx = chainer.Variable(xp.asarray(xp.tile(bbx, (repeat, 1, 1, 1))), volatile="off")
@@ -49,7 +49,7 @@ parser.add_argument("-e", "--epoch", type=int, default=50,
                     help="iterate training given epoch times")
 parser.add_argument("-m", "--num_l", type=int, default=40,
                     help="a number of sample ")
-parser.add_argument("-s", "--step", type=int, default=4,
+parser.add_argument("-s", "--step", type=int, default=2,
                     help="look step")
 parser.add_argument("-v", "--var", type=float, default=0.02,
                     help="sample variation")
@@ -120,6 +120,7 @@ if gpu_id >= 0:
 
 # ログの設定　精度、エラー率
 acc1_array = np.full_like(np.zeros(n_epoch), np.nan)
+train_acc = np.full_like(np.zeros(n_epoch), np.nan)
 loss_array = np.full_like(np.zeros(n_epoch), np.nan)
 max_acc = 0
 date_id = datetime.datetime.now().strftime("%m%d%H%M")
@@ -147,8 +148,6 @@ print("going to train {} epoch".format(n_epoch))
 #
 # 訓練開始
 #
-
-
 for epoch in range(n_epoch):
     sys.stdout.write("(epoch: {})\n".format(epoch + 1))
     sys.stdout.flush()
@@ -170,18 +169,23 @@ for epoch in range(n_epoch):
     x, t = get_batch(val_dataset, perm[0:test_b], 1)
     acc = model(x, t, mode=0)
 
+    perm = np.random.permutation(data_max)
+    x, t = get_batch(train_dataset, perm[0:test_b], 1)
+    t_acc = model(x, t, mode=0)
     # 記録
     acc1_array[epoch] = acc
-    print("acc1:{:1.4f}".format(acc1_array[epoch]))
+    train_acc[epoch] = t_acc
+    print("test_acc:{:1.4f} train_acc:{:1.4f}".format(acc1_array[epoch], train_acc[epoch]))
     best = ""
     if acc > max_acc:
         max_acc = acc
         best = "best"
     # 分類精度の保存
     with open(log_filename, mode='a') as fh:
-        fh.write("acc1:{:1.4f}\n".format(acc1_array[epoch]))
+        fh.write("test_acc:{:1.4f} train_acc:{:1.4f}".format(acc1_array[epoch], train_acc[epoch]))
 
-    np.save(log_dir + "/acc1.npy", acc1_array)
+    np.save(log_dir + "/test_acc.npy", acc1_array)
+    np.save(log_dir + "/train_acc.npy", train_acc)
     # モデルの保存
     if gpu_id >= 0:
         model.to_cpu()
@@ -193,6 +197,7 @@ for epoch in range(n_epoch):
     plt.figure()
     plt.ylim([0, 1])
     plt.plot(acc1_array, color="red")
+    plt.plot(train_acc, color="blue")
     plt.savefig(log_dir + "/acc.png")
     plt.figure()
     plt.plot(loss_array)

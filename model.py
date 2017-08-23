@@ -17,15 +17,15 @@ from env import xp
 
 
 class SAF(chainer.Chain):
-    def __init__(self, n_units=196, n_out=0, img_size=112, var=0.18, n_step=2, gpu_id=-1):
+    def __init__(self, n_units=144, n_out=0, img_size=112, var=0.18, n_step=2, gpu_id=-1):
         super(SAF, self).__init__(
             # the size of the inputs to each layer will be inferred
             # glimpse network
             # 切り取られた画像を処理する部分　位置情報 (glimpse loc)と画像特徴量の積を出力
-            glimpse_cnn_1=L.Convolution2D(3, 20, 5),  # in 20 out 16
-            glimpse_cnn_2=L.Convolution2D(20, 40, 5),  # in 16 out 12
-            glimpse_cnn_3=L.Convolution2D(40, 80, 5),  # in 12 out 8
-            glimpse_full=L.Linear(8 * 8 * 80, n_units),
+            glimpse_cnn_1=L.Convolution2D(3, 20, 4),  # in 20 out 16
+            glimpse_cnn_2=L.Convolution2D(20, 40, 4),  # in 16 out 12
+            glimpse_cnn_3=L.Convolution2D(40, 80, 4),  # in 12 out 8
+            glimpse_full=L.Linear(4 * 4 * 80, n_units),
             glimpse_loc=L.Linear(2, n_units),
 
             # baseline network 強化学習の期待値を学習し、バイアスbとする
@@ -44,13 +44,13 @@ class SAF(chainer.Chain):
             attention_scale=L.Linear(n_units, 1),
 
             # 入力画像を処理するネットワーク
-            context_cnn_1=L.Convolution2D(3, 4, 5),  # 56 to 52 pooling: 26
-            context_cnn_2=L.Convolution2D(4, 4, 3),  # 26 to 22 pooling
-            context_cnn_3=L.Convolution2D(4, 4, 3),  # 22 to 16
+            context_cnn_1=L.Convolution2D(3, 9, 3),  # 64 to 62
+            context_cnn_2=L.Convolution2D(9, 9, 4),  # 31 to 28
+            context_cnn_3=L.Convolution2D(9, 1, 3),  # 14 to 12
 
-            l_norm_cc1=L.BatchNormalization(4),
-            l_norm_cc2=L.BatchNormalization(4),
-            l_norm_cc3=L.BatchNormalization(4),
+            l_norm_cc1=L.BatchNormalization(9),
+            l_norm_cc2=L.BatchNormalization(9),
+            l_norm_cc3=L.BatchNormalization(1),
 
             class_full=L.Linear(n_units, n_out)
         )
@@ -126,8 +126,8 @@ class SAF(chainer.Chain):
     def first_forward(self, x, num_lm):
         self.rnn_1(Variable(xp.zeros((num_lm, self.n_unit)).astype(xp.float32)))
         h2 = F.relu(self.l_norm_cc1(self.context_cnn_1(F.average_pooling_2d(x, 4, stride=4))))
-        h3 = F.relu(self.l_norm_cc2(self.context_cnn_2(F.average_pooling_2d(h2, 3, stride=3))))
-        h4 = F.relu(self.l_norm_cc3(self.context_cnn_3(F.average_pooling_2d(h3, 2, stride=2))))
+        h3 = F.relu(self.l_norm_cc2(self.context_cnn_2(F.max_pooling_2d(h2, 2, stride=2))))
+        h4 = F.relu(self.l_norm_cc3(self.context_cnn_3(F.max_pooling_2d(h3, 2, stride=2))))
         h5 = F.relu(self.rnn_2(h4))
 
         l = F.sigmoid(self.attention_loc(h5))
@@ -139,7 +139,7 @@ class SAF(chainer.Chain):
         hgl = F.relu(self.glimpse_loc(lm))
         hg1 = F.relu(self.l_norm_c1(self.glimpse_cnn_1(Variable(xm))))
         hg2 = F.relu(self.l_norm_c2(self.glimpse_cnn_2(hg1)))
-        hg3 = F.relu(self.l_norm_c3(self.glimpse_cnn_3(hg2)))
+        hg3 = F.relu(self.l_norm_c3(self.glimpse_cnn_3(F.max_pooling_2d(hg2, 2, stride=2))))
         hgf = F.relu(self.glimpse_full(hg3))
 
         hr1 = F.relu(self.rnn_1(hgl * hgf))
