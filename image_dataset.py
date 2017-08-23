@@ -72,6 +72,7 @@ class ValidationDataset(chainer.dataset.DatasetMixin):
     def get_example(self, i):
         filename = self._pairs[i][0]
         image = Image.open(filename)
+        image = image.convert("RGB")
         image_array = np.asarray(image)
         image_array = image_array.astype('float32')
         image_array = image_array / 255

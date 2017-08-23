@@ -12,7 +12,7 @@ import numpy as np
 # i = np.random()
 # np.random.seed()
 import matplotlib
-# matplotlib.use('Agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import argparse
 import chainer
@@ -43,7 +43,7 @@ def get_batch(ds, index, repeat):
 #  引数分解
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-b", "--batch_size", type=int, default=1,
+parser.add_argument("-b", "--batch_size", type=int, default=50,
                     help="batch size")
 parser.add_argument("-e", "--epoch", type=int, default=50,
                     help="iterate training given epoch times")
@@ -97,6 +97,8 @@ n_target = 2
 num_class = n_target
 target_c = ""
 test_b = 1000
+if test_b > test_max:
+    test_b = test_max
 
 # モデルの作成
 model_file_name = args.am

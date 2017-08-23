@@ -116,7 +116,7 @@ class SAF(chainer.Chain):
                     xm, lm, sm = self.make_img(x, l, s, num_lm, random=0)
                     l1, s1, y, b = self.recurrent_forward(xm, lm, sm)
                     accuracy = y.data * target.data
-                    return xp.sum(accuracy)
+                    return xp.sum(accuracy) / num_lm
                 else:
                     xm, lm, sm = self.make_img(x, l, s, num_lm, random=0)
                     l1, s1, y, b = self.recurrent_forward(xm, lm, sm)
