@@ -23,7 +23,7 @@ import datetime
 import importlib
 import image_dataset
 import socket
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 
 def get_batch(ds, index, repeat):
@@ -42,7 +42,7 @@ def get_batch(ds, index, repeat):
     return bbx, bbt
 
 
-def draw_attention(d_img, d_l_list, d_s_list, index, save=""):
+def draw_attention(d_img, d_l_list, d_s_list, index, save="", acc=""):
     draw = ImageDraw.Draw(d_img)
     color_list = ["red", "yellow", "blue", "green"]
     size = 256
@@ -56,8 +56,12 @@ def draw_attention(d_img, d_l_list, d_s_list, index, save=""):
         p2[0] = size - p2[0]
         print([p1[0], p1[1], p2[0], p2[1]])
         draw.rectangle([p1[0], p1[1], p2[0], p2[1]], outline=color_list[j])
+    if len(acc) > 0:
+        font = ImageFont.truetype("C:\\Windows\\Fonts\\msgothic.ttc", 20)
+        draw.text([120, 230], acc, font=font, fill="red")
     if len(save) > 0:
         img.save(save + ".png")
+
 #  引数分解
 parser = argparse.ArgumentParser()
 # load model id
@@ -67,6 +71,8 @@ parser.add_argument("-l", "--l", type=str, default="v1",
                     help="load model name")
 test_b = 10
 num_step = 2
+label_file = "2"
+
 # * **************************************************************************************************************** * #
 
 parser.add_argument("-b", "--batch_size", type=int, default=50,
@@ -107,12 +113,12 @@ gpu_id = args.gpu
 if socket.gethostname() == "naruto":
     gpu_id = 0
     log_dir = "/home/y-murata/storage/place397/"
-    train_dataset = image_dataset.ImageDataset("/home/y-murata/data_256")
-    val_dataset = image_dataset.ValidationDataset("/home/y-murata/val_256")
+    train_dataset = image_dataset.ImageDataset("/home/y-murata/data_256", label_file)
+    val_dataset = image_dataset.ValidationDataset("/home/y-murata/val_256", label_file)
 else:
     log_dir = ""
-    train_dataset = image_dataset.ImageDataset(r"C:\Users\waka-lab\Documents\place365\data_256")
-    val_dataset = image_dataset.ValidationDataset(r"C:\Users\waka-lab\Documents\place365\val_256")
+    train_dataset = image_dataset.ImageDataset(r"C:\Users\waka-lab\Documents\place365\data_256", label_file)
+    val_dataset = image_dataset.ValidationDataset(r"C:\Users\waka-lab\Documents\place365\val_256", label_file)
 
 xp = cuda.cupy if gpu_id >= 0 else np
 
@@ -142,16 +148,18 @@ if gpu_id >= 0:
     chainer.cuda.get_device_from_id(gpu_id).use()
     model.to_gpu()
 
-perm = np.random.permutation(data_max)
-x, t = get_batch(train_dataset, perm[0:test_b], 1)
+perm = np.random.permutation(test_max)
+x, t = get_batch(val_dataset, perm[0:test_b], 1)
 acc, l_list, s_list = model.use_model(x, t)
 print(acc)
-print(l_list)
-print(s_list)
+
 for i in range(test_b):
     save_filename = "buf/attention" + str(i)
     # print(acc[i])
-    img = train_dataset.get_image(perm[i])
-    draw_attention(img, l_list, s_list, i, save=save_filename)
+    img = val_dataset.get_image(perm[i])
+    acc_str = ("{:1.8f}".format(acc[i]))
+    print(acc_str)
+    print(acc[i])
+    draw_attention(img, l_list, s_list, i, save=save_filename, acc=acc_str[0:6])
 
 

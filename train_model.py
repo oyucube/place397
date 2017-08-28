@@ -56,7 +56,7 @@ parser.add_argument("-v", "--var", type=float, default=0.02,
 parser.add_argument("-g", "--gpu", type=int, default=-1,
                     help="use gpu")
 # train id
-parser.add_argument("-i", "--id", type=str, default="sample",
+parser.add_argument("-i", "--id", type=str, default="5",
                     help="data id")
 parser.add_argument("-a", "--am", type=str, default="model",
                     help="attention model")
@@ -74,6 +74,7 @@ model_id = args.id
 num_lm = args.num_l
 n_epoch = args.epoch
 train_id = args.id
+label_file = args.id
 num_step = args.step
 train_b = args.batch_size
 train_var = args.var
@@ -83,12 +84,12 @@ gpu_id = args.gpu
 if socket.gethostname() == "naruto":
     gpu_id = 0
     log_dir = "/home/y-murata/storage/place397/"
-    train_dataset = image_dataset.ImageDataset("/home/y-murata/data_256")
-    val_dataset = image_dataset.ValidationDataset("/home/y-murata/val_256")
+    train_dataset = image_dataset.ImageDataset("/home/y-murata/data_256", label_file)
+    val_dataset = image_dataset.ValidationDataset("/home/y-murata/val_256", label_file)
 else:
     log_dir = ""
-    train_dataset = image_dataset.ImageDataset(r"C:\Users\waka-lab\Documents\place365\data_256")
-    val_dataset = image_dataset.ValidationDataset(r"C:\Users\waka-lab\Documents\place365\val_256")
+    train_dataset = image_dataset.ImageDataset(r"C:\Users\waka-lab\Documents\place365\data_256", label_file)
+    val_dataset = image_dataset.ValidationDataset(r"C:\Users\waka-lab\Documents\place365\val_256", label_file)
 
 xp = cuda.cupy if gpu_id >= 0 else np
 
@@ -98,9 +99,7 @@ img_size = 256
 n_target = train_dataset.num_target
 num_class = n_target
 target_c = ""
-test_b = 1000
-if test_b > test_max:
-    test_b = test_max
+test_b = test_max
 
 # モデルの作成
 model_file_name = args.am
@@ -186,8 +185,8 @@ for epoch in range(n_epoch):
         del t
 
     # 記録
-    acc1_array[epoch] = acc / di
-    train_acc[epoch] = t_acc / di
+    acc1_array[epoch] = acc / test_b
+    train_acc[epoch] = t_acc / test_b
     print("test_acc:{:1.4f} train_acc:{:1.4f}".format(acc1_array[epoch], train_acc[epoch]))
     best = ""
     if acc > max_acc:

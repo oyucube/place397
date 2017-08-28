@@ -7,11 +7,11 @@ from chainer import datasets
 
 
 class ImageDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, path):
+    def __init__(self, path, file_name):
         self.path = path
         pairs = []
         n = 0
-        with open('data/data_label_list.csv', newline='') as f:
+        with open('data/data_label_list_' + file_name + '.csv', newline='') as f:
             tsv = csv.reader(f, delimiter=',')
             for row in tsv:
                 c_path = "/" + row[0][0:1] + "/" + row[0]
@@ -49,12 +49,12 @@ class ImageDataset(chainer.dataset.DatasetMixin):
 
 
 class ValidationDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, path):
+    def __init__(self, path, file_name):
         self.path = path
         pairs = []
         label_list = []
         n = 0
-        with open('data/data_label_list.csv', newline='') as f:
+        with open('data/data_label_list_' + file_name + '.csv', newline='') as f:
             tsv = csv.reader(f, delimiter=',')
             for row in tsv:
                 label_list.append([row[1], row[2]])
