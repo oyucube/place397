@@ -95,7 +95,7 @@ xp = cuda.cupy if gpu_id >= 0 else np
 data_max = train_dataset.len
 test_max = val_dataset.len
 img_size = 256
-n_target = 2
+n_target = train_dataset.num_target
 num_class = n_target
 target_c = ""
 test_b = 1000
