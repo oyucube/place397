@@ -174,9 +174,9 @@ for epoch in range(n_epoch):
     perm = np.random.permutation(test_max)
     for i in range(0, 100, test_b):
         di += 1
-        x, t = get_batch(train_dataset, perm[i:i+train_b], num_lm)
+        x, t = get_batch(train_dataset, perm[i:i+100], num_lm)
         # 順伝播
-        x, t = get_batch(val_dataset, perm[0:test_b], 1)
+        x, t = get_batch(val_dataset, perm[i:i+100], 1)
         acc += model(x, t, mode=0)
 
         x, t = get_batch(train_dataset, perm[0:test_b], 1)
