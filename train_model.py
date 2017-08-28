@@ -82,9 +82,11 @@ gpu_id = args.gpu
 # naruto ならGPUモード
 if socket.gethostname() == "naruto":
     gpu_id = 0
+    log_dir = "/home/y-murata/storage/place397/"
     train_dataset = image_dataset.ImageDataset("/home/y-murata/data_256")
     val_dataset = image_dataset.ValidationDataset("/home/y-murata/val_256")
 else:
+    log_dir = ""
     train_dataset = image_dataset.ImageDataset(r"C:\Users\waka-lab\Documents\place365\data_256")
     val_dataset = image_dataset.ValidationDataset(r"C:\Users\waka-lab\Documents\place365\val_256")
 
@@ -124,7 +126,7 @@ train_acc = np.full_like(np.zeros(n_epoch), np.nan)
 loss_array = np.full_like(np.zeros(n_epoch), np.nan)
 max_acc = 0
 date_id = datetime.datetime.now().strftime("%m%d%H%M")
-log_dir = "log/" + train_id + file_id + date_id
+log_dir = log_dir + "log/" + train_id + file_id + date_id
 os.mkdir(log_dir)
 out_file_name = log_dir + "/log"
 
