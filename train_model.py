@@ -144,7 +144,7 @@ print("{} class recognition\nclass:{} use {} data set".format(num_class, target_
 print("model:{}".format(model_file_name))
 print("parameter")
 print("step:{} num_sample:{} batch_size:{} var:{}".format(num_step, num_lm, train_b, train_var))
-print("log dir:{}".format(out_file_name))
+print("log dir:{}".format(log_dir))
 print("going to train {} epoch".format(n_epoch))
 
 #
