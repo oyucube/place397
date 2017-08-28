@@ -123,6 +123,31 @@ class SAF(chainer.Chain):
                 l = l1
                 s = s1
 
+    def use_model(self, x, t):
+        self.reset()
+        num_lm = x.data.shape[0]
+        n_step = self.n_step
+        s_list = xp.empty((n_step, num_lm, 1))
+        l_list = xp.empty((n_step, num_lm, 2))
+        l, s, b1 = self.first_forward(x, num_lm)
+        for i in range(n_step):
+            if i + 1 == n_step:
+                xm, lm, sm = self.make_img(x, l, s, num_lm, random=0)
+                l1, s1, y, b = self.recurrent_forward(xm, lm, sm)
+                s_list[i] = s1.data
+                l_list[i] = l1.data
+                accuracy = y.data * t.data
+                s_list = xp.power(10, s_list - 1)
+                return xp.sum(accuracy, axis=1), l_list, s_list
+            else:
+                xm, lm, sm = self.make_img(x, l, s, num_lm, random=0)
+                l1, s1, y, b = self.recurrent_forward(xm, lm, sm)
+            l = l1
+            s = s1
+            s_list[i] = s.data
+            l_list[i] = l.data
+        return
+
     def first_forward(self, x, num_lm):
         self.rnn_1(Variable(xp.zeros((num_lm, self.n_unit)).astype(xp.float32)))
         h2 = F.relu(self.l_norm_cc1(self.context_cnn_1(F.average_pooling_2d(x, 4, stride=4))))

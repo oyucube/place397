@@ -160,6 +160,8 @@ for epoch in range(n_epoch):
         # 順伝播
         model.cleargrads()
         loss_func = model(x, t, mode=1)
+        del x
+        del t
         loss_array[epoch] = loss_func.data
         loss_func.backward()
         loss_func.unchain_backward()  # truncate
@@ -167,16 +169,25 @@ for epoch in range(n_epoch):
 
     # 評価
     # 順伝播
+    acc = 0
+    t_acc = 0
+    di = 0
     perm = np.random.permutation(test_max)
-    x, t = get_batch(val_dataset, perm[0:test_b], 1)
-    acc = model(x, t, mode=0)
+    for i in range(0, 100, test_b):
+        di += 1
+        x, t = get_batch(train_dataset, perm[i:i+train_b], num_lm)
+        # 順伝播
+        x, t = get_batch(val_dataset, perm[0:test_b], 1)
+        acc += model(x, t, mode=0)
 
-    perm = np.random.permutation(data_max)
-    x, t = get_batch(train_dataset, perm[0:test_b], 1)
-    t_acc = model(x, t, mode=0)
+        x, t = get_batch(train_dataset, perm[0:test_b], 1)
+        t_acc += model(x, t, mode=0)
+        del x
+        del t
+
     # 記録
-    acc1_array[epoch] = acc
-    train_acc[epoch] = t_acc
+    acc1_array[epoch] = acc / di
+    train_acc[epoch] = t_acc / di
     print("test_acc:{:1.4f} train_acc:{:1.4f}".format(acc1_array[epoch], train_acc[epoch]))
     best = ""
     if acc > max_acc:
@@ -198,7 +209,7 @@ for epoch in range(n_epoch):
     # グラフの作成と保存
     plt.figure()
     plt.ylim([0, 1])
-    plt.plot(acc1_array, color="red")
+    plt.plot(acc1_array, color="green")
     plt.plot(train_acc, color="blue")
     plt.savefig(log_dir + "/acc.png")
     plt.figure()

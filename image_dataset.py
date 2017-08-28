@@ -41,6 +41,12 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         label = np.int32(self._pairs[i][1])
         return image_array, label
 
+    def get_image(self, i):
+        filename = self._pairs[i][0]
+        image = Image.open(filename)
+        image = image.convert("RGB")
+        return image
+
 
 class ValidationDataset(chainer.dataset.DatasetMixin):
     def __init__(self, path):
@@ -81,3 +87,8 @@ class ValidationDataset(chainer.dataset.DatasetMixin):
         label = np.int32(self._pairs[i][1])
         return image_array, label
 
+    def get_image(self, i):
+        filename = self._pairs[i][0]
+        image = Image.open(filename)
+        image = image.convert("RGB")
+        return image
