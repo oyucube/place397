@@ -173,7 +173,7 @@ for epoch in range(n_epoch):
     di = 0
     perm = np.random.permutation(test_max)
     perm2 = np.random.permutation(data_max) 
-   for i in range(0, test_b, 100):
+    for i in range(0, test_b, 100):
         # 順伝播
         x, t = get_batch(val_dataset, perm[i:i+100], 1)
         acc += model(x, t, mode=0)
