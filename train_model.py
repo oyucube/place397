@@ -172,12 +172,13 @@ for epoch in range(n_epoch):
     t_acc = 0
     di = 0
     perm = np.random.permutation(test_max)
-    for i in range(0, test_b, 100):
+    perm2 = np.random.permutation(data_max) 
+   for i in range(0, test_b, 100):
         # 順伝播
         x, t = get_batch(val_dataset, perm[i:i+100], 1)
         acc += model(x, t, mode=0)
 
-        x, t = get_batch(train_dataset, perm[i:i+100], 1)
+        x, t = get_batch(train_dataset, perm2[i:i+100], 1)
         t_acc += model(x, t, mode=0)
         del x
         del t
