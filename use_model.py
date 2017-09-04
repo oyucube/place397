@@ -67,11 +67,11 @@ parser = argparse.ArgumentParser()
 # load model id
 
 # * *********************************************    config    ***************************************************** * #
-parser.add_argument("-l", "--l", type=str, default="v1",
+parser.add_argument("-l", "--l", type=str, default="v2",
                     help="load model name")
 test_b = 10
 num_step = 2
-label_file = "2"
+label_file = "5"
 
 # * **************************************************************************************************************** * #
 
@@ -138,7 +138,7 @@ model = sss.SAF(n_out=n_target, img_size=img_size, var=train_var, n_step=num_ste
 # model load
 if len(args.l) != 0:
     print("load model model/my{}{}.model".format(args.l, model_id))
-    serializers.load_npz('model/best' + args.l + model_id + '.model', model)
+    serializers.load_npz('model/' + args.l + label_file + '.model', model)
 else:
     print("load model!!!")
     exit()
