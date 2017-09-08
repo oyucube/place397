@@ -26,7 +26,7 @@ class SAF(chainer.Chain):
             glimpse_cnn_2=L.Convolution2D(20, 40, 4),  # in 16 out 12
             glimpse_cnn_3=L.Convolution2D(40, 80, 4),  # in 12 out 8
             glimpse_full=L.Linear(4 * 4 * 80, n_units),
-            glimpse_loc=L.Linear(2, n_units),
+            glimpse_loc=L.Linear(3, n_units),
 
             # baseline network 強化学習の期待値を学習し、バイアスbとする
             baseline=L.Linear(n_units, 1),

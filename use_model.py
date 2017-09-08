@@ -67,10 +67,12 @@ parser = argparse.ArgumentParser()
 # load model id
 
 # * *********************************************    config    ***************************************************** * #
-parser.add_argument("-l", "--l", type=str, default="v2",
+parser.add_argument("-a", "--am", type=str, default="model_bn",
+                    help="attention model")
+parser.add_argument("-l", "--l", type=str, default="bn_s4",
                     help="load model name")
-test_b = 10
-num_step = 2
+test_b = 100
+num_step = 4
 label_file = "5"
 
 # * **************************************************************************************************************** * #
@@ -90,9 +92,6 @@ parser.add_argument("-g", "--gpu", type=int, default=-1,
 # train id
 parser.add_argument("-i", "--id", type=str, default="sample",
                     help="data id")
-parser.add_argument("-a", "--am", type=str, default="model",
-                    help="attention model")
-
 
 # model save id
 parser.add_argument("-o", "--filename", type=str, default="v1",
@@ -138,7 +137,7 @@ model = sss.SAF(n_out=n_target, img_size=img_size, var=train_var, n_step=num_ste
 # model load
 if len(args.l) != 0:
     print("load model model/my{}{}.model".format(args.l, model_id))
-    serializers.load_npz('model/' + args.l + label_file + '.model', model)
+    serializers.load_npz('model/best' + args.l + label_file + '.model', model)
 else:
     print("load model!!!")
     exit()
@@ -152,7 +151,7 @@ perm = np.random.permutation(test_max)
 x, t = get_batch(val_dataset, perm[0:test_b], 1)
 acc, l_list, s_list = model.use_model(x, t)
 print(acc)
-
+test_b = 10
 for i in range(test_b):
     save_filename = "buf/attention" + str(i)
     # print(acc[i])

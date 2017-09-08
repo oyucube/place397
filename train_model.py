@@ -45,9 +45,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-b", "--batch_size", type=int, default=50,
                     help="batch size")
-parser.add_argument("-e", "--epoch", type=int, default=50,
+parser.add_argument("-e", "--epoch", type=int, default=30,
                     help="iterate training given epoch times")
-parser.add_argument("-m", "--num_l", type=int, default=40,
+parser.add_argument("-m", "--num_l", type=int, default=20,
                     help="a number of sample ")
 parser.add_argument("-s", "--step", type=int, default=2,
                     help="look step")
@@ -58,7 +58,7 @@ parser.add_argument("-g", "--gpu", type=int, default=-1,
 # train id
 parser.add_argument("-i", "--id", type=str, default="5",
                     help="data id")
-parser.add_argument("-a", "--am", type=str, default="model",
+parser.add_argument("-a", "--am", type=str, default="model_bn",
                     help="attention model")
 # load model id
 parser.add_argument("-l", "--l", type=str, default="",

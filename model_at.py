@@ -17,7 +17,7 @@ from env import xp
 
 
 class SAF(chainer.Chain):
-    def __init__(self, n_units=144, n_out=0, img_size=112, var=0.18, n_step=2, gpu_id=-1):
+    def __init__(self, n_units=200, n_out=0, img_size=112, var=0.18, n_step=2, gpu_id=-1):
         super(SAF, self).__init__(
             # the size of the inputs to each layer will be inferred
             # glimpse network
@@ -26,7 +26,7 @@ class SAF(chainer.Chain):
             glimpse_cnn_2=L.Convolution2D(20, 40, 4),  # in 16 out 12
             glimpse_cnn_3=L.Convolution2D(40, 80, 4),  # in 12 out 8
             glimpse_full=L.Linear(4 * 4 * 80, n_units),
-            glimpse_loc=L.Linear(2, n_units),
+            glimpse_loc=L.Linear(3, n_units),
 
             # baseline network 強化学習の期待値を学習し、バイアスbとする
             baseline=L.Linear(n_units, 1),
@@ -46,11 +46,12 @@ class SAF(chainer.Chain):
             # 入力画像を処理するネットワーク
             context_cnn_1=L.Convolution2D(3, 9, 3),  # 64 to 62
             context_cnn_2=L.Convolution2D(9, 9, 4),  # 31 to 28
-            context_cnn_3=L.Convolution2D(9, 1, 3),  # 14 to 12
+            context_cnn_3=L.Convolution2D(9, 9, 3),  # 14 to 12
+            context_full=(12*12*9, n_units),
 
             l_norm_cc1=L.BatchNormalization(9),
             l_norm_cc2=L.BatchNormalization(9),
-            l_norm_cc3=L.BatchNormalization(1),
+            l_norm_cc3=L.BatchNormalization(9),
 
             class_full=L.Linear(n_units, n_out)
         )
@@ -137,7 +138,7 @@ class SAF(chainer.Chain):
                 s_list[i] = s1.data
                 l_list[i] = l1.data
                 accuracy = y.data * t.data
-                s_list = xp.power(10, s_list - 1)/2
+                s_list = xp.power(10, s_list - 1)
                 return xp.sum(accuracy, axis=1), l_list, s_list
             else:
                 xm, lm, sm = self.make_img(x, l, s, num_lm, random=0)
@@ -153,7 +154,8 @@ class SAF(chainer.Chain):
         h2 = F.relu(self.l_norm_cc1(self.context_cnn_1(F.average_pooling_2d(x, 4, stride=4))))
         h3 = F.relu(self.l_norm_cc2(self.context_cnn_2(F.max_pooling_2d(h2, 2, stride=2))))
         h4 = F.relu(self.l_norm_cc3(self.context_cnn_3(F.max_pooling_2d(h3, 2, stride=2))))
-        h5 = F.relu(self.rnn_2(h4))
+        h4r = F.relu(self.context_full(h4))
+        h5 = F.relu(self.rnn_2(h4r))
 
         l = F.sigmoid(self.attention_loc(h5))
         s = F.sigmoid(self.attention_scale(h5))
@@ -161,7 +163,8 @@ class SAF(chainer.Chain):
         return l, s, b
 
     def recurrent_forward(self, xm, lm, sm):
-        hgl = F.relu(self.glimpse_loc(lm))
+        ls = xp.concatenate([lm.data, sm.data], axis=1)
+        hgl = F.relu(self.glimpse_loc(Variable(ls)))
         hg1 = F.relu(self.l_norm_c1(self.glimpse_cnn_1(Variable(xm))))
         hg2 = F.relu(self.l_norm_c2(self.glimpse_cnn_2(hg1)))
         hg3 = F.relu(self.l_norm_c3(self.glimpse_cnn_3(F.max_pooling_2d(hg2, 2, stride=2))))
@@ -205,7 +208,7 @@ class SAF(chainer.Chain):
             sm = Variable(sm)
             lm = Variable(lm.astype(xp.float32))
         if self.use_gpu:
-            xm = make_sampled_image.generate_xm_rgb_sa_gpu(lm.data, sm.data, x.data, num_lm, g_size=self.gsize)
+            xm = make_sampled_image.generate_xm_rgb_gpu(lm.data, sm.data, x.data, num_lm, g_size=self.gsize)
         else:
-            xm = make_sampled_image.generate_xm_rgb_sa(lm.data, sm.data, x.data, num_lm, g_size=self.gsize)
+            xm = make_sampled_image.generate_xm_rgb(lm.data, sm.data, x.data, num_lm, g_size=self.gsize)
         return xm, lm, sm

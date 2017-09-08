@@ -26,7 +26,7 @@ class SAF(chainer.Chain):
             glimpse_cnn_2=L.Convolution2D(20, 40, 4),  # in 16 out 12
             glimpse_cnn_3=L.Convolution2D(40, 80, 4),  # in 12 out 8
             glimpse_full=L.Linear(4 * 4 * 80, n_units),
-            glimpse_loc=L.Linear(2, n_units),
+            glimpse_loc=L.Linear(3, n_units),
 
             # baseline network 強化学習の期待値を学習し、バイアスbとする
             baseline=L.Linear(n_units, 1),
@@ -161,7 +161,8 @@ class SAF(chainer.Chain):
         return l, s, b
 
     def recurrent_forward(self, xm, lm, sm):
-        hgl = F.relu(self.glimpse_loc(lm))
+        ls = xp.concatenate([lm.data, sm.data], axis=1)
+        hgl = F.relu(self.glimpse_loc(Variable(ls)))
         hg1 = F.relu(self.l_norm_c1(self.glimpse_cnn_1(Variable(xm))))
         hg2 = F.relu(self.l_norm_c2(self.glimpse_cnn_2(hg1)))
         hg3 = F.relu(self.l_norm_c3(self.glimpse_cnn_3(F.max_pooling_2d(hg2, 2, stride=2))))

@@ -5,6 +5,7 @@ from chainer import functions as F
 from chainer import links as L
 from chainer.utils import type_check
 
+
 class NoBetaBatchNormalizationFunction(function.Function):
 
 	def __init__(self, eps=1e-5):
