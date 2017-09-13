@@ -165,7 +165,8 @@ for epoch in range(n_epoch):
         loss_func.backward()
         loss_func.unchain_backward()  # truncate
         optimizer.update()
-
+        del x, t
+        gc.collect()
     # 評価
     # 順伝播
     acc = 0
