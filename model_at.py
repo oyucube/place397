@@ -150,6 +150,7 @@ class SAF(chainer.Chain):
         return
 
     def first_forward(self, x, num_lm, test=False):
+        x.volatile = test
         self.rnn_1(Variable(xp.zeros((num_lm, self.n_unit)).astype(xp.float32), volatile=test))
         h2 = F.relu(self.l_norm_cc1(self.context_cnn_1(F.average_pooling_2d(x, 4, stride=4))))
         h3 = F.relu(self.l_norm_cc2(self.context_cnn_2(F.max_pooling_2d(h2, 2, stride=2))))

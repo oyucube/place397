@@ -26,10 +26,6 @@ import socket
 
 
 def get_batch(ds, index, repeat, test=False):
-    if test:
-        vs = "on"
-    else:
-        vs = "off"
     nt = ds.num_target
     # print(index)
     batch_size = index.shape[0]
@@ -40,8 +36,8 @@ def get_batch(ds, index, repeat, test=False):
         bbt[bi][ds[index[bi]][1]] = 1
     bbx = bbx.reshape(batch_size, 3, 256, 256).astype(np.float32)
     bbt = bbt.astype(np.float32)
-    bbx = chainer.Variable(xp.asarray(xp.tile(bbx, (repeat, 1, 1, 1))), volatile=vs)
-    bbt = chainer.Variable(xp.asarray(xp.tile(bbt, (repeat, 1))), volatile=vs)
+    bbx = chainer.Variable(xp.asarray(xp.tile(bbx, (repeat, 1, 1, 1))), volatile=test)
+    bbt = chainer.Variable(xp.asarray(xp.tile(bbt, (repeat, 1))), volatile=test)
     return bbx, bbt
 
 #  引数分解
