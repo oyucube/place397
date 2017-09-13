@@ -17,23 +17,23 @@ from env import xp
 
 
 class SAF(chainer.Chain):
-    def __init__(self, n_units=256, n_out=0, img_size=112, var=0.18, n_step=2, gpu_id=-1):
+    def __init__(self, n_units=200, n_out=0, img_size=112, var=0.18, n_step=2, gpu_id=-1):
         super(SAF, self).__init__(
             # the size of the inputs to each layer will be inferred
             # glimpse network
             # 切り取られた画像を処理する部分　位置情報 (glimpse loc)と画像特徴量の積を出力
-            glimpse_cnn_1=L.Convolution2D(3, 32, 4),  # in 20 out 16
-            glimpse_cnn_2=L.Convolution2D(32, 64, 4),  # in 16 out 12
-            glimpse_cnn_3=L.Convolution2D(64, 128, 4),  # in 12 out 8
-            glimpse_full=L.Linear(4 * 4 * 128, n_units),
+            glimpse_cnn_1=L.Convolution2D(3, 20, 4),  # in 20 out 16
+            glimpse_cnn_2=L.Convolution2D(20, 40, 4),  # in 16 out 12
+            glimpse_cnn_3=L.Convolution2D(40, 80, 4),  # in 12 out 8
+            glimpse_full=L.Linear(4 * 4 * 80, n_units),
             glimpse_loc=L.Linear(3, n_units),
 
             # baseline network 強化学習の期待値を学習し、バイアスbとする
             baseline=L.Linear(n_units, 1),
 
-            l_norm_c1=L.BatchNormalization(32),
-            l_norm_c2=L.BatchNormalization(64),
-            l_norm_c3=L.BatchNormalization(128),
+            l_norm_c1=L.BatchNormalization(20),
+            l_norm_c2=L.BatchNormalization(40),
+            l_norm_c3=L.BatchNormalization(80),
 
             # 記憶を用いるLSTM部分
             rnn_1=L.LSTM(n_units, n_units),
@@ -44,14 +44,14 @@ class SAF(chainer.Chain):
             attention_scale=L.Linear(n_units, 1),
 
             # 入力画像を処理するネットワーク
-            context_cnn_1=L.Convolution2D(3, 32, 3),  # 64 to 62
-            context_cnn_2=L.Convolution2D(32, 64, 4),  # 31 to 28
-            context_cnn_3=L.Convolution2D(64, 64, 3),  # 14 to 12
+            context_cnn_1=L.Convolution2D(3, 9, 3),  # 64 to 62
+            context_cnn_2=L.Convolution2D(9, 9, 4),  # 31 to 28
+            context_cnn_3=L.Convolution2D(9, 9, 3),  # 14 to 12
             context_full=L.Linear(12 * 12 * 9, n_units),
 
-            l_norm_cc1=L.BatchNormalization(32),
-            l_norm_cc2=L.BatchNormalization(64),
-            l_norm_cc3=L.BatchNormalization(64),
+            l_norm_cc1=L.BatchNormalization(9),
+            l_norm_cc2=L.BatchNormalization(9),
+            l_norm_cc3=L.BatchNormalization(9),
 
             class_full=L.Linear(n_units, n_out)
         )
