@@ -14,7 +14,7 @@ from chainer import Variable, cuda
 import numpy as np
 import make_sampled_image
 from env import xp
-
+from bnlstm import BNLSTM
 
 class SAF(chainer.Chain):
     def __init__(self, n_units=256, n_out=0, img_size=112, var=0.18, n_step=2, gpu_id=-1):
@@ -36,8 +36,8 @@ class SAF(chainer.Chain):
             l_norm_c3=L.BatchNormalization(128),
 
             # 記憶を用いるLSTM部分
-            rnn_1=L.LSTM(n_units, n_units),
-            rnn_2=L.LSTM(n_units, n_units),
+            rnn_1=L.BNLSTM(n_units, n_units),
+            rnn_2=L.BNLSTM(n_units, n_units),
 
             # 注意領域を選択するネットワーク
             attention_loc=L.Linear(n_units, 2),
