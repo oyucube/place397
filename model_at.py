@@ -169,9 +169,12 @@ class SAF(chainer.Chain):
         hg2 = F.relu(self.l_norm_c2(self.glimpse_cnn_2(hg1)))
         hg3 = F.relu(self.l_norm_c3(self.glimpse_cnn_3(F.max_pooling_2d(hg2, 2, stride=2))))
         hgf = F.relu(self.glimpse_full(hg3))
-
+        if test:
+            print(hr1.volatile)
         hr1 = F.relu(self.rnn_1(hgl * hgf))
         # ベクトルの積
+        if test:
+            print(hr1.volatile)
         hr2 = F.relu(self.rnn_2(hr1))
         l = F.sigmoid(self.attention_loc(hr2))
         s = F.sigmoid(self.attention_scale(hr2))
