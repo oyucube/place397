@@ -23,6 +23,7 @@ import datetime
 import importlib
 import image_dataset
 import socket
+import gc
 
 
 def get_batch(ds, index, repeat, test=False):
@@ -178,6 +179,8 @@ for epoch in range(n_epoch):
 
         x, t = get_batch(train_dataset, perm2[i:i+100], 1)
         t_acc += model(x, t, mode=0)
+    del x, t
+    gc.collect()
 
     # 記録
     acc1_array[epoch] = cuda.to_cpu(acc / test_b)
