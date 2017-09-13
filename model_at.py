@@ -149,8 +149,8 @@ class SAF(chainer.Chain):
             l_list[i] = l.data
         return
 
-    def first_forward(self, x, num_lm):
-        self.rnn_1(Variable(xp.zeros((num_lm, self.n_unit)).astype(xp.float32)))
+    def first_forward(self, x, num_lm, test=False):
+        self.rnn_1(Variable(xp.zeros((num_lm, self.n_unit)).astype(xp.float32), volatile=test))
         h2 = F.relu(self.l_norm_cc1(self.context_cnn_1(F.average_pooling_2d(x, 4, stride=4))))
         h3 = F.relu(self.l_norm_cc2(self.context_cnn_2(F.max_pooling_2d(h2, 2, stride=2))))
         h4 = F.relu(self.l_norm_cc3(self.context_cnn_3(F.max_pooling_2d(h3, 2, stride=2))))
@@ -159,13 +159,13 @@ class SAF(chainer.Chain):
 
         l = F.sigmoid(self.attention_loc(h5))
         s = F.sigmoid(self.attention_scale(h5))
-        b = F.sigmoid(self.baseline(Variable(h5.data)))
+        b = F.sigmoid(self.baseline(Variable(h5.data, volatile=test)))
         return l, s, b
 
-    def recurrent_forward(self, xm, lm, sm):
+    def recurrent_forward(self, xm, lm, sm, test=False):
         ls = xp.concatenate([lm.data, sm.data], axis=1)
-        hgl = F.relu(self.glimpse_loc(Variable(ls)))
-        hg1 = F.relu(self.l_norm_c1(self.glimpse_cnn_1(Variable(xm))))
+        hgl = F.relu(self.glimpse_loc(Variable(ls, volatile=test)))
+        hg1 = F.relu(self.l_norm_c1(self.glimpse_cnn_1(Variable(xm, volatile=test))))
         hg2 = F.relu(self.l_norm_c2(self.glimpse_cnn_2(hg1)))
         hg3 = F.relu(self.l_norm_c3(self.glimpse_cnn_3(F.max_pooling_2d(hg2, 2, stride=2))))
         hgf = F.relu(self.glimpse_full(hg3))
