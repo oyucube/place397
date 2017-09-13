@@ -47,7 +47,7 @@ class SAF(chainer.Chain):
             context_cnn_1=L.Convolution2D(3, 32, 3),  # 64 to 62
             context_cnn_2=L.Convolution2D(32, 64, 4),  # 31 to 28
             context_cnn_3=L.Convolution2D(64, 64, 3),  # 14 to 12
-            context_full=L.Linear(12 * 12 * 9, n_units),
+            context_full=L.Linear(12 * 12 * 64, n_units),
 
             l_norm_cc1=L.BatchNormalization(32),
             l_norm_cc2=L.BatchNormalization(64),
