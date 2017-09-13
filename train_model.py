@@ -25,7 +25,11 @@ import image_dataset
 import socket
 
 
-def get_batch(ds, index, repeat):
+def get_batch(ds, index, repeat, test=False):
+    if test:
+        vs = "on"
+    else:
+        vs = "off"
     nt = ds.num_target
     # print(index)
     batch_size = index.shape[0]
@@ -36,8 +40,8 @@ def get_batch(ds, index, repeat):
         bbt[bi][ds[index[bi]][1]] = 1
     bbx = bbx.reshape(batch_size, 3, 256, 256).astype(np.float32)
     bbt = bbt.astype(np.float32)
-    bbx = chainer.Variable(xp.asarray(xp.tile(bbx, (repeat, 1, 1, 1))), volatile="off")
-    bbt = chainer.Variable(xp.asarray(xp.tile(bbt, (repeat, 1))), volatile="off")
+    bbx = chainer.Variable(xp.asarray(xp.tile(bbx, (repeat, 1, 1, 1))), volatile=vs)
+    bbt = chainer.Variable(xp.asarray(xp.tile(bbt, (repeat, 1))), volatile=vs)
     return bbx, bbt
 
 #  引数分解
@@ -173,10 +177,10 @@ for epoch in range(n_epoch):
     perm2 = np.random.permutation(data_max) 
     for i in range(0, test_b, 100):
         # 順伝播
-        x, t = get_batch(val_dataset, perm[i:i+100], 1)
+        x, t = get_batch(val_dataset, perm[i:i+100], 1, test=True)
         acc += model(x, t, mode=0)
 
-        x, t = get_batch(train_dataset, perm2[i:i+100], 1)
+        x, t = get_batch(train_dataset, perm2[i:i+100], 1, test=True)
         t_acc += model(x, t, mode=0)
 
     # 記録
