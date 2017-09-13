@@ -159,8 +159,7 @@ for epoch in range(n_epoch):
         # 順伝播
         model.cleargrads()
         loss_func = model(x, t, mode=1)
-        del x
-        del t
+
         loss_array[epoch] = loss_func.data
         loss_func.backward()
         loss_func.unchain_backward()  # truncate
@@ -170,7 +169,6 @@ for epoch in range(n_epoch):
     # 順伝播
     acc = 0
     t_acc = 0
-    di = 0
     perm = np.random.permutation(test_max)
     perm2 = np.random.permutation(data_max) 
     for i in range(0, test_b, 100):
@@ -180,12 +178,10 @@ for epoch in range(n_epoch):
 
         x, t = get_batch(train_dataset, perm2[i:i+100], 1)
         t_acc += model(x, t, mode=0)
-        del x
-        del t
 
     # 記録
-    acc1_array[epoch] = acc / test_b
-    train_acc[epoch] = t_acc / test_b
+    acc1_array[epoch] = cuda.to_cpu(acc / test_b)
+    train_acc[epoch] = cuda.to_cpu(t_acc / test_b)
     print("test_acc:{:1.4f} train_acc:{:1.4f}".format(acc1_array[epoch], train_acc[epoch]))
     best = ""
     if acc > max_acc:
