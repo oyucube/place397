@@ -193,7 +193,6 @@ class SAF(chainer.Chain):
 
         else:
             eps = xp.random.normal(0, 1, size=l.data.shape).astype(xp.float32)
-            epss = xp.random.normal(0, 1, size=s.data.shape).astype(xp.float32)
             lm = xp.clip(l.data + eps * xp.sqrt(self.vars), 0, 1)
             lm = Variable(lm.astype(xp.float32))
         if self.use_gpu:
