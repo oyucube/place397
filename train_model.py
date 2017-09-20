@@ -200,6 +200,7 @@ for epoch in range(n_epoch):
     # モデルの保存
     if gpu_id >= 0:
         serializers.save_npz(log_dir + "/" + best + file_id + train_id + '.model', model.to_cpu())
+        model.to_gpu()
     else:
         serializers.save_npz(log_dir + "/" + best + file_id + train_id + '.model', model)
     # グラフの作成と保存
