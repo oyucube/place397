@@ -158,7 +158,7 @@ class SAF(chainer.Chain):
         return l, b
 
     def recurrent_forward(self, xm, lm, test=False):
-        hgl = F.relu(self.glimpse_loc(lm))
+        hgl = F.relu(self.glimpse_loc(Variable(lm.data, volatile=test)))
 
         hg1 = F.relu(self.l_norm_c1(self.glimpse_cnn_1(Variable(xm, volatile=test))))
         hg2 = F.relu(self.l_norm_c2(self.glimpse_cnn_2(hg1)))
