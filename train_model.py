@@ -206,12 +206,14 @@ for epoch in range(n_epoch):
     # グラフの作成と保存
     plt.figure()
     plt.ylim([0, 1])
-    plt.plot(acc1_array, color="green")
-    plt.plot(train_acc, color="blue")
+    p1 = plt.plot(acc1_array, color="green")
+    p2 = plt.plot(train_acc, color="blue")
+    plt.legend((p1[0], p2[0]), ("test", "train"), loc=2)
     plt.savefig(log_dir + "/acc.png")
     plt.figure()
     plt.plot(loss_array)
     plt.savefig(log_dir + "/loss.png")
+    plt.close("all")
 
 with open(log_filename, mode='a') as fh:
     fh.write("last acc:{}  max_acc:{}\n".format(acc1_array[n_epoch - 1], max_acc))
